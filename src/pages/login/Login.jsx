@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useContext, useState } from "react";
 import "./login.scss";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase";
@@ -21,8 +21,7 @@ const Login = () => {
             .then((userCredential) => {
                 // Signed in
                 const user = userCredential.user;
-                // console.log(user);
-                dispatch();
+                dispatch({ type: "LOGIN", payload: user });
                 navigate("/");
             })
             .catch((error) => {
