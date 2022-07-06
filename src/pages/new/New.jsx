@@ -2,25 +2,41 @@ import "./new.scss";
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 import DriveFolderUploadOutlinedIcon from "@mui/icons-material/DriveFolderUploadOutlined";
-import { useState } from "react";
-import { addDoc, collection, serverTimestamp, doc, setDoc } from "firebase/firestore";
-import { db } from "../../firebase";
+import { useEffect, useState } from "react";
+import { addDoc, collection, doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { auth, db, storage } from "../../firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 const New = ({ inputs, title }) => {
     const [file, setFile] = useState("");
     const [data, setData] = useState({});
 
+    useEffect(() => {
+        const uploadFile = () => {
+            const name = new Date().getTime() + file.name;
+            console.log(name);
+            // const storageRef = ref(storage, file.name)
+        };
+        file && uploadFile();
+    }, [file]);
+
+    const handleInput = (e) => {
+        const { id, value } = e.target;
+
+        setData({ ...data, [id]: value });
+    };
+
     const handleAdd = async (e) => {
         e.preventDefault();
         try {
-            const res = await addDoc(collection(db, "cities"), {
-                name: "Los Angeles",
-                state: "CA",
-                country: "USA",
+            const res = await createUserWithEmailAndPassword(auth, data.email, data.password);
+            await setDoc(doc(db, "users", res.user.uid), {
+                ...data,
                 timeStamp: serverTimestamp(),
             });
-        } catch (error) {
-            console.log(error);
+        } catch (err) {
+            console.log(err);
         }
     };
 
@@ -48,7 +64,7 @@ const New = ({ inputs, title }) => {
                             {inputs.map((input) => (
                                 <div className="formInput" key={input.id}>
                                     <label>{input.label}</label>
-                                    <input type={input.type} placeholder={input.placeholder} />
+                                    <input id={input.id} type={input.type} placeholder={input.placeholder} onChange={handleInput} />
                                 </div>
                             ))}
                             <button type="submit">Send</button>
